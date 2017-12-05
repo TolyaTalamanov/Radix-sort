@@ -55,9 +55,9 @@ void lsd_radix_sort(Iterator first, Iterator last){
                 it++;
             }
         }
-        std::cout << "\niteration : " <<power / counts_bucket << '\n';
-        std::copy(first, last, std::ostream_iterator<int>(std::cout, " "));
-        std::cout << "" << '\n';
+        // std::cout << "\niteration : " <<power / counts_bucket << '\n';
+        // std::copy(first, last, std::ostream_iterator<int>(std::cout, " "));
+        // std::cout << "" << '\n';
     }
 
 }
