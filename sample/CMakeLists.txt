@@ -1,3 +1,4 @@
+set(CMAKE_CXX_STANDARD 14)
 file(GLOB app_list RELATIVE "${CMAKE_CURRENT_SOURCE_DIR}" *.cpp)
 foreach(app_filename ${app_list})
     get_filename_component(app ${app_filename} NAME_WE)
