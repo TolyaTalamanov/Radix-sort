@@ -19,18 +19,6 @@ inline unsigned char get_val_byte(unsigned int number, int postion){
     return *ptr;
 }
 
-// class TableMask{
-// public:
-//     constexpr TableMask(){
-//
-//     }
-//     constexpr array<int, 4> operator() const {
-//         table[1] = 0;
-//         return table;
-//     }
-// private:
-//     array<int, 4> table{{0, 0, 0, 0}};
-// };
 struct RADIX_EXPORT
 create_table{
     constexpr create_table() : table() {
@@ -89,7 +77,6 @@ void lsd_radix_sort(Iterator first, Iterator last){
             }
         }
     }
-
 }
 template<typename Iterator>
 void lsd_compact_radix_sort(Iterator first, Iterator last)
@@ -111,28 +98,15 @@ void lsd_compact_radix_sort(Iterator first, Iterator last)
             bucket_index[i] = (copy_input_arr[i] / power) % counts_bucket;
             sizes[bucket_index[i]]++;
         }
-        // for(auto it = first; it != last; ++it){
-        //     bucket_index[j] = (*it / power) % counts_bucket;
-        //     sizes[bucket_index[j]]++;
-        //     ++j;
-        // }
-
         current_position = 0;
         for(int i = 0 ; i < counts_bucket; ++i){
             shifts[i] = current_position;
             current_position += sizes[i];
         }
         for(int i = 0 ; i < n; ++i){
-           // val_it = *(first + i);
             radix_array[shifts[bucket_index[i]]++] = copy_input_arr[i];
         }
-        // std::cout << "\n\nradix array : " << '\n';
-        // copy(radix_array.begin(), radix_array.end(),
-                                 // ostream_iterator<int>(cout, " "));
-
-        //std::cout << "" << '\n';
         copy(radix_array.begin(), radix_array.end(), copy_input_arr.begin());
-
         fill(shifts.begin(), shifts.end(), 0);
         fill(sizes.begin(),  sizes.end(),  0);
         fill(bucket_index.begin(), bucket_index.end(), 0);
@@ -154,7 +128,6 @@ void bytes_radix_sort(Iterator first, Iterator last)
     for(int i = 0 ; i < 4; ++i ){
         for(int j = 0; j < n; ++j){
             bucket_index = copy_input_arr[j] & mask_tables.table[i];
-            //cout << " bucket index : " << i << " " << j << " = " << static_cast<int>(bucket_index) <<endl;
             buckets[get_val_byte(bucket_index, i)].push(copy_input_arr[j]);
         }
         int k = 0;
@@ -165,13 +138,8 @@ void bytes_radix_sort(Iterator first, Iterator last)
                 bucket.pop();
             }
         }
-//        cout << "\narray  " << i << "\n";
-//        copy(copy_input_arr.begin(), copy_input_arr.end(), ostream_iterator<unsigned int>(cout, " "));
-//        cout << "\n";
-
     }
     copy(copy_input_arr.begin(), copy_input_arr.end(), first);
-
 }
 
 #endif //MPI_LAB_3_RADIX_SORT_INCLUDE_SORTS_H

@@ -17,4 +17,6 @@ include_directories("include")
 set(CMAKE_CXX_COMPILE_FLAGS ${CMAKE_CXX_COMPILE_FLAGS} ${MPI_COMPILE_FLAGS})
 set(CMAKE_CXX_LINK_FLAGS ${CMAKE_CXX_LINK_FLAGS} ${MPI_LINK_FLAGS})
 add_library(${CMAKE_PROJECT_NAME} STATIC ${INCLUDE} ${SOURCE})
+
 add_subdirectory(sample)
+add_subdirectory(tests)

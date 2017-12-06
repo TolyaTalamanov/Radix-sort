@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 
         int seed = 1;
         mt19937 generator(seed);
-        uniform_int_distribution<int> distribution(0, 1000);
+        uniform_int_distribution<int> distribution(0, 100000000);
 
         generate(input_arr.begin(), input_arr.end(),
         [&distribution, &generator](){

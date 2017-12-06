@@ -1,0 +1,6 @@
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
+find_package(GTest REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS})
+set(SOURCE_FILES test_main.cpp sorts_test.cpp )
+add_executable(tests ${SOURCE_FILES})
+target_link_libraries(tests ${GTEST_BOTH_LIBRARIES} ${LIBRARY})

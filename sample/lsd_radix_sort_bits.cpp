@@ -8,7 +8,7 @@ int main(int argc, char* argv[]) {
     vector<int> data(size_array);
     int seed = 1;
     mt19937 generator(seed);
-    uniform_int_distribution<int> distribution(0, 1000);
+    uniform_int_distribution<int> distribution(0, 100000000);
 
     generate(data.begin(), data.end(), [&distribution, &generator](){
         return distribution(generator);
