@@ -48,11 +48,8 @@ int main(int argc, char* argv[]) {
         [&distribution, &generator](){
             return distribution(generator);
         });
-        cout << "input array : " << '\n';
-        copy(input_arr.begin(), input_arr.end(),
-                                ostream_iterator<int>(cout, " "));
-        cout << '\n';
     }
+    double start_time = MPI_Wtime();
     MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);
     int remainder = rank == size - 1 ? size_array % size : 0;
     part = size_array / size;
@@ -96,12 +93,9 @@ int main(int argc, char* argv[]) {
             inplace_merge(input_arr.begin(), input_arr.begin() + middle,
                                                         input_arr.end());
         }
-        std::cout << "sorted array : " << '\n';
-        copy(input_arr.begin(), input_arr.end(),
-        ostream_iterator<int>(cout, " "));
+        double end_time = MPI_Wtime();
+        cout << "time = " << (end_time - start_time) * 1000 <<" ms" <<endl;
     }
-
-
     MPI_Finalize();
     return 0;
 }

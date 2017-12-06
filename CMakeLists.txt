@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.4)
 set(LIBRARY RadixSortsLib)
+
 project(${LIBRARY})
 set(INCLUDE include/Sorts.h)
 set(SOURCE  src/Sorts.cpp)

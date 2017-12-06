@@ -17,9 +17,8 @@ int main(int argc, char* argv[]) {
     // copy(data.begin(), data.end(), ostream_iterator<int>(cout, " "));
 
     auto start = Time::now();
-    lsd_radix_sort(data.begin(), data.end());
+    lsd_compact_radix_sort(data.begin(), data.end());
     auto end = Time::now();
-
     // std::cout << "\n\nafter sorts : " << '\n';
     // copy(data.begin(), data.end(), ostream_iterator<int>(cout, " "));
 
