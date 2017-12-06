@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <iterator>
 #include "Sorts.h"
+
 using namespace std;
 int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
@@ -19,11 +20,10 @@ int main(int argc, char* argv[]) {
     vector<int> senddispls;
 
     int size_array;
-    if(rank == 0){
-
         size_array = atoi(argv[1]);
         input_arr.resize(size_array);
         part = size_array / size;
+        if(rank == 0){
         int stride = part;
         recvcount.resize(size);
         sendcount.resize(size);
@@ -56,16 +56,11 @@ int main(int argc, char* argv[]) {
     MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);
     int remainder = rank == size - 1 ? size_array % size : 0;
     part = size_array / size;
-    //std::cout << "\nrank " << rank << "remainder  " << remainder << '\n';
     vector<int> part_input_arr(part + remainder);
-    //std::cout << "\npart vector size = " << part_input_arr.size() << '\n';
 
     MPI_Scatterv(input_arr.data(), sendcount.data(), senddispls.data(), MPI_INT,
                  part_input_arr.data(), part + remainder, MPI_INT,
                  0, MPI_COMM_WORLD);
-
-    //std::cout << "rank = " << rank << '\n';
-    //std::cout << "sorted_part : " << '\n';
 
     lsd_radix_sort(part_input_arr.begin(), part_input_arr.end());
 
@@ -73,13 +68,39 @@ int main(int argc, char* argv[]) {
                 input_arr.data(), recvcount.data(), recvdispls.data(), MPI_INT, 0,
                 MPI_COMM_WORLD);
 
+    int merge_count = size / 2;
+    int start;
+    int middle;
+    int finish;
+    vector<int> count_process(merge_count);
+    for(int i = 0 ; i < merge_count; ++i){
+        count_process[i] = size / (pow(2, i));
+    }
+
+    for(int i = 0 ; i < merge_count; ++i){
+        if(rank < count_process[i]){
+            if(rank < size){
+                start  = part * i;
+                middle = part * (i + 1);
+                finish = part * (i + 2);
+                inplace_merge(input_arr.begin() + start,
+                              input_arr.begin() + middle,
+                              input_arr.begin() + finish );
+            }
+        }
+    }
+
     if(rank == 0){
+        if(size % 2 == 1){
+            middle = part * (size - 1);
+            inplace_merge(input_arr.begin(), input_arr.begin() + middle,
+                                                        input_arr.end());
+        }
         std::cout << "sorted array : " << '\n';
         copy(input_arr.begin(), input_arr.end(),
-                                ostream_iterator<int>(cout, " "));
+        ostream_iterator<int>(cout, " "));
     }
-    //copy(part_input_arr.begin(), part_input_arr.end(), ostream_iterator<int>(cout, " "));
-    //std::cout << "\n--------rank " << rank << "---------" << '\n';
+
 
     MPI_Finalize();
     return 0;
