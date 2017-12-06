@@ -6,10 +6,35 @@
 #include <algorithm>
 #include <chrono>
 #include <queue>
+#include <array>
 using namespace std;
 using Time = std::chrono::high_resolution_clock;
 using ms   = std::chrono::milliseconds;
 using fms  = std::chrono::duration<float, std::milli>;
+
+// class TableMask{
+// public:
+//     constexpr TableMask(){
+//
+//     }
+//     constexpr array<int, 4> operator() const {
+//         table[1] = 0;
+//         return table;
+//     }
+// private:
+//     array<int, 4> table{{0, 0, 0, 0}};
+// };
+struct create_table{
+    constexpr create_table() : table() {
+        for(auto i = 0 ; i < 4; ++i){
+            auto little_bit = i * 8;
+            for(auto j = little_bit; j < little_bit + 8; ++j ){
+                table[i] |= (1 << j);
+            }
+        }
+    }
+    unsigned int table[4];
+};
 
 class RADIX_EXPORT radix_compare
 {
