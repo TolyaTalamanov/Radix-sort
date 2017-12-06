@@ -12,6 +12,13 @@ using Time = std::chrono::high_resolution_clock;
 using ms   = std::chrono::milliseconds;
 using fms  = std::chrono::duration<float, std::milli>;
 
+inline unsigned char get_val_byte(unsigned int number, int postion){
+    auto* ptr = reinterpret_cast<unsigned char*>(&number);
+    for(int i = 0; i < postion; ++i)
+        ptr++;
+    return *ptr;
+}
+
 // class TableMask{
 // public:
 //     constexpr TableMask(){
@@ -24,7 +31,8 @@ using fms  = std::chrono::duration<float, std::milli>;
 // private:
 //     array<int, 4> table{{0, 0, 0, 0}};
 // };
-struct create_table{
+struct RADIX_EXPORT
+create_table{
     constexpr create_table() : table() {
         for(auto i = 0 ; i < 4; ++i){
             auto little_bit = i * 8;
@@ -130,6 +138,39 @@ void lsd_compact_radix_sort(Iterator first, Iterator last)
         fill(bucket_index.begin(), bucket_index.end(), 0);
     }
     copy(radix_array.begin(), radix_array.end(), first);
+
+}
+template<typename Iterator>
+void bytes_radix_sort(Iterator first, Iterator last)
+{
+    constexpr auto mask_tables = create_table();
+    const int n = std::distance(first, last);
+    vector<unsigned int> copy_input_arr(n);
+    copy(first, last, copy_input_arr.begin());
+    const int counts_bucket = 256;
+    std::queue<unsigned int> buckets[counts_bucket];
+    unsigned int bucket_index;
+    int size_bucket;
+    for(int i = 0 ; i < 4; ++i ){
+        for(int j = 0; j < n; ++j){
+            bucket_index = copy_input_arr[j] & mask_tables.table[i];
+            //cout << " bucket index : " << i << " " << j << " = " << static_cast<int>(bucket_index) <<endl;
+            buckets[get_val_byte(bucket_index, i)].push(copy_input_arr[j]);
+        }
+        int k = 0;
+        for(auto& bucket : buckets){
+            size_bucket = bucket.size();
+            for(int j = 0 ; j < size_bucket; ++j){
+                copy_input_arr[k++] = bucket.front();
+                bucket.pop();
+            }
+        }
+//        cout << "\narray  " << i << "\n";
+//        copy(copy_input_arr.begin(), copy_input_arr.end(), ostream_iterator<unsigned int>(cout, " "));
+//        cout << "\n";
+
+    }
+    copy(copy_input_arr.begin(), copy_input_arr.end(), first);
 
 }
 
