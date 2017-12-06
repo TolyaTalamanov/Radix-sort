@@ -32,3 +32,8 @@ TEST_F(SortsTest, byte_radix_sort){
     bytes_radix_sort(data.begin(), data.end());
     EXPECT_EQ(is_sorted(data.begin(), data.end()), true);
 }
+
+TEST_F(SortsTest, compact_bytes_radix_sort){
+    compact_bytes_radix_sort(data.begin(), data.end());
+    EXPECT_EQ(is_sorted(data.begin(), data.end()), true);
+}

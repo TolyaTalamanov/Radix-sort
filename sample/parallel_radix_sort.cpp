@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     int part;
-    vector<int> input_arr;
+    vector<unsigned int> input_arr;
     vector<int> recvcount;
     vector<int> sendcount;
     vector<int> recvdispls;
@@ -35,14 +35,14 @@ int main(int argc, char* argv[]) {
             recvdispls[i] = i * stride;
             senddispls[i] = i * stride;
         }
-        recvdispls[size - 1] = (size - 1) * stride;
-        senddispls[size - 1] = (size - 1) * stride;
-        recvcount[size - 1]  = part + (size_array % size);
-        sendcount[size - 1]  = part + (size_array % size);
+        recvdispls[size - 1]  = (size - 1) * stride;
+        senddispls[size - 1]  = (size - 1) * stride;
+        recvcount [size - 1]  = part + (size_array % size);
+        sendcount [size - 1]  = part + (size_array % size);
 
         int seed = 1;
         mt19937 generator(seed);
-        uniform_int_distribution<int> distribution(0, 100000000);
+        uniform_int_distribution<unsigned int> distribution(0, 100000000);
 
         generate(input_arr.begin(), input_arr.end(),
         [&distribution, &generator](){
@@ -55,15 +55,15 @@ int main(int argc, char* argv[]) {
     part = size_array / size;
     vector<int> part_input_arr(part + remainder);
 
-    MPI_Scatterv(input_arr.data(), sendcount.data(), senddispls.data(), MPI_INT,
-                 part_input_arr.data(), part + remainder, MPI_INT,
-                 0, MPI_COMM_WORLD);
+    MPI_Scatterv(input_arr.data(), sendcount.data(), senddispls.data(),
+                 MPI_INT, part_input_arr.data(), part + remainder,
+                 MPI_INT, 0, MPI_COMM_WORLD);
 
     lsd_radix_sort(part_input_arr.begin(), part_input_arr.end());
 
     MPI_Gatherv(part_input_arr.data(), part + remainder, MPI_INT,
-                input_arr.data(), recvcount.data(), recvdispls.data(), MPI_INT, 0,
-                MPI_COMM_WORLD);
+                input_arr.data(), recvcount.data(), recvdispls.data(),
+                MPI_INT, 0, MPI_COMM_WORLD);
 
     int merge_count = size / 2;
     int start;
@@ -86,7 +86,6 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-
     if(rank == 0){
         if(size % 2 == 1){
             middle = part * (size - 1);

@@ -112,7 +112,6 @@ void lsd_compact_radix_sort(Iterator first, Iterator last)
         fill(bucket_index.begin(), bucket_index.end(), 0);
     }
     copy(radix_array.begin(), radix_array.end(), first);
-
 }
 template<typename Iterator>
 void bytes_radix_sort(Iterator first, Iterator last)
@@ -140,6 +139,40 @@ void bytes_radix_sort(Iterator first, Iterator last)
         }
     }
     copy(copy_input_arr.begin(), copy_input_arr.end(), first);
+}
+template<typename Iterator>
+void compact_bytes_radix_sort(Iterator first, Iterator last)
+{
+    constexpr auto mask_tables = create_table();
+    const int counts_bucket = 256;
+    const int n = std::distance(first, last);
+    vector<int> sizes (counts_bucket);
+    vector<int> shifts(counts_bucket);
+    vector<unsigned int> radix_array(n);
+    vector<unsigned int> copy_input_arr(n);
+    vector<unsigned int> bucket_index(n);
+    copy(first, last, copy_input_arr.begin());
+    int current_position = 0;
+    int size_bucket;
+    for(int i = 0 ; i < 4; ++i ){
+        for(int j = 0; j < n; ++j){
+            bucket_index[j] = get_val_byte(copy_input_arr[j] & mask_tables.table[i], i);
+            sizes[bucket_index[j]]++;
+        }
+        current_position = 0;
+        for(int i = 0 ; i < counts_bucket; ++i){
+            shifts[i] = current_position;
+            current_position += sizes[i];
+        }
+        for(int i = 0 ; i < n; ++i){
+            radix_array[shifts[bucket_index[i]]++] = copy_input_arr[i];
+        }
+        copy(radix_array.begin(), radix_array.end(), copy_input_arr.begin());
+        fill(shifts.begin(), shifts.end(), 0);
+        fill(sizes.begin(),  sizes.end(),  0);
+        fill(bucket_index.begin(), bucket_index.end(), 0);
+    }
+    copy(radix_array.begin(), radix_array.end(), first);
 }
 
 #endif //MPI_LAB_3_RADIX_SORT_INCLUDE_SORTS_H
