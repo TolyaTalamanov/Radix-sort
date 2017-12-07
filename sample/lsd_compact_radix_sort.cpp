@@ -13,16 +13,10 @@ int main(int argc, char* argv[]) {
     generate(data.begin(), data.end(), [&distribution, &generator](){
         return distribution(generator);
     });
-    // std::cout << "before sorts : " << '\n';
-    // copy(data.begin(), data.end(), ostream_iterator<int>(cout, " "));
-
     auto start = Time::now();
     lsd_compact_radix_sort(data.begin(), data.end());
     auto end = Time::now();
-    // std::cout << "\n\nafter sorts : " << '\n';
-    // copy(data.begin(), data.end(), ostream_iterator<int>(cout, " "));
-
     fms elapsed_time = end - start;
-    std::cout <<"\n\ntime : " << elapsed_time.count() <<"ms" << '\n';
+    std::cout << elapsed_time.count() << '\n';
     return 0;
 }

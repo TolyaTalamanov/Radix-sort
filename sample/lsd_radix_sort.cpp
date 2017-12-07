@@ -17,6 +17,6 @@ int main(int argc, char* argv[]) {
     lsd_radix_sort(data.begin(), data.end());
     auto end = Time::now();
     fms elapsed_time = end - start;
-    std::cout <<"\n\ntime : " << elapsed_time.count() <<"ms" << '\n';
+    std::cout << elapsed_time.count() << '\n';
     return 0;
 }
