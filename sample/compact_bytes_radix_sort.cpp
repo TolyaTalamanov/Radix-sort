@@ -10,21 +10,18 @@ int main(int argc, char* argv[]) {
     mt19937 generator(seed);
     uniform_int_distribution<int> distribution(std::numeric_limits<int>::min(),
                                                std::numeric_limits<int>::max());
-
     generate(data.begin(), data.end(), [&distribution, &generator](){
         return distribution(generator);
     });
     // std::cout << "before sorts = " << '\n';
     // copy(data.begin(), data.end(), ostream_iterator<int>(cout, " "));
     // std::cerr << "" << '\n';
-
     auto start = Time::now();
-    lsd_compact_radix_sort(data.begin(), data.end());
+    compact_bytes_radix_sort(data.begin(), data.end());
     auto end = Time::now();
     // std::cout << "after sorts = " << '\n';
     // copy(data.begin(), data.end(), ostream_iterator<int>(cout, " "));
     // std::cerr << "" << '\n';
-
     fms elapsed_time = end - start;
     std::cout << elapsed_time.count() << '\n';
     return 0;

@@ -10,12 +10,13 @@ protected:
         data.resize(10000);
         int seed = 1;
         mt19937 generator(seed);
-        uniform_int_distribution<unsigned int> distribution(0, 100000000);
+        uniform_int_distribution<int> distribution(std::numeric_limits<int>::min(),
+                                                   std::numeric_limits<int>::max());
         generate(data.begin(), data.end(), [&distribution, &generator](){
             return distribution(generator);
         });
     }
-    vector<unsigned int> data;
+    vector<int> data;
 };
 
 TEST_F(SortsTest, lsd_radix_sort){

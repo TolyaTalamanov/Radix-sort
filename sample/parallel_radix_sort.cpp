@@ -13,7 +13,7 @@ int main(int argc, char* argv[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &rank);
     MPI_Comm_size(MPI_COMM_WORLD, &size);
     int part;
-    vector<unsigned int> input_arr;
+    vector<int> input_arr;
     vector<int> recvcount;
     vector<int> sendcount;
     vector<int> recvdispls;
@@ -42,7 +42,8 @@ int main(int argc, char* argv[]) {
 
         int seed = 1;
         mt19937 generator(seed);
-        uniform_int_distribution<unsigned int> distribution(0, 100000000);
+        uniform_int_distribution<int> distribution(std::numeric_limits<int>::min(),
+                                                   std::numeric_limits<int>::max());
 
         generate(input_arr.begin(), input_arr.end(),
         [&distribution, &generator](){
@@ -59,7 +60,7 @@ int main(int argc, char* argv[]) {
                  MPI_INT, part_input_arr.data(), part + remainder,
                  MPI_INT, 0, MPI_COMM_WORLD);
 
-    lsd_radix_sort(part_input_arr.begin(), part_input_arr.end());
+    compact_bytes_radix_sort(part_input_arr.begin(), part_input_arr.end());
 
     MPI_Gatherv(part_input_arr.data(), part + remainder, MPI_INT,
                 input_arr.data(), recvcount.data(), recvdispls.data(),

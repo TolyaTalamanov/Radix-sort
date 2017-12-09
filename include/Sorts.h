@@ -12,15 +12,17 @@ using Time = std::chrono::high_resolution_clock;
 using ms   = std::chrono::milliseconds;
 using fms  = std::chrono::duration<float, std::milli>;
 
-inline unsigned char get_val_byte(unsigned int number, int postion){
-    auto* ptr = reinterpret_cast<unsigned char*>(&number);
-    for(int i = 0; i < postion; ++i)
-        ptr++;
-    return *ptr;
+inline char get_val_signbyte(int number, int position)
+{
+    return *((char*)&number + position);
 }
-
+inline unsigned char get_val_byte(int number, int position)
+{
+    return *((unsigned char*)&number + position);
+}
 struct RADIX_EXPORT
 create_table{
+
     constexpr create_table() : table() {
         for(auto i = 0 ; i < 4; ++i){
             auto little_bit = i * 8;
@@ -29,7 +31,7 @@ create_table{
             }
         }
     }
-    unsigned int table[4];
+    int table[4];
 };
 
 class RADIX_EXPORT radix_compare
@@ -57,14 +59,16 @@ void lsd_radix_sort_bits(Iterator first, Iterator last)
 template<typename Iterator>
 void lsd_radix_sort(Iterator first, Iterator last){
     const int n = std::distance(first, last);
-    const int counts_bucket = 10;
+    const int counts_bucket = 19;
     std::queue<int> buckets[counts_bucket];
     int bucket_index;
-    int max = *std::max_element(first, last);
+    int max = fabs(*std::max_element(first, last, [](int v1, int v2){
+        return fabs(v1) < fabs(v2);
+    }));
     int size_bucket;
-    for(int power = 1; max != 0; power *= counts_bucket, max /= counts_bucket ){
+    for(int power = 1; max != 0; power *= 10, max /= 10 ){
         for(auto it = first; it != last; ++it){
-            bucket_index = (*it / power) % counts_bucket;
+            bucket_index = (*it / power) % 10 + 9;
             buckets[bucket_index].push(*it);
         }
         Iterator it = first;
@@ -82,8 +86,10 @@ template<typename Iterator>
 void lsd_compact_radix_sort(Iterator first, Iterator last)
 {
     const int n = std::distance(first, last);
-    const int counts_bucket = 10;
-    int max = *std::max_element(first, last);
+    const int counts_bucket = 19;
+    int max = fabs(*std::max_element(first, last, [](int v1, int v2){
+        return fabs(v1) < fabs(v2);
+    }));
     vector<int> bucket_index(n);
     int current_position = 0;
     int val_it;
@@ -93,9 +99,9 @@ void lsd_compact_radix_sort(Iterator first, Iterator last)
     vector<int> copy_input_arr(n);
     copy(first, last, copy_input_arr.begin());
 
-    for(int power = 1; max != 0; power *= counts_bucket, max /= counts_bucket ){
+    for(int power = 1; max != 0; power *= 10, max /= 10 ){
         for(int i = 0 ; i < n; ++i){
-            bucket_index[i] = (copy_input_arr[i] / power) % counts_bucket;
+            bucket_index[i] = (copy_input_arr[i] / power) % 10 + 9;
             sizes[bucket_index[i]]++;
         }
         current_position = 0;
@@ -118,16 +124,15 @@ void bytes_radix_sort(Iterator first, Iterator last)
 {
     constexpr auto mask_tables = create_table();
     const int n = std::distance(first, last);
-    vector<unsigned int> copy_input_arr(n);
+    vector<int> copy_input_arr(n);
     copy(first, last, copy_input_arr.begin());
     const int counts_bucket = 256;
-    std::queue<unsigned int> buckets[counts_bucket];
+    std::queue<int> buckets[counts_bucket];
     unsigned int bucket_index;
     int size_bucket;
-    for(int i = 0 ; i < 4; ++i ){
+    for(int i = 0 ; i < 3; ++i ){
         for(int j = 0; j < n; ++j){
-            bucket_index = copy_input_arr[j] & mask_tables.table[i];
-            buckets[get_val_byte(bucket_index, i)].push(copy_input_arr[j]);
+            buckets[get_val_byte(copy_input_arr[j], i)].push(copy_input_arr[j]);
         }
         int k = 0;
         for(auto& bucket : buckets){
@@ -136,6 +141,17 @@ void bytes_radix_sort(Iterator first, Iterator last)
                 copy_input_arr[k++] = bucket.front();
                 bucket.pop();
             }
+        }
+    }
+    for(int j = 0; j < n; ++j){
+        buckets[get_val_signbyte(copy_input_arr[j], 3) + 128].push(copy_input_arr[j]);
+    }
+    int k = 0;
+    for(auto& bucket : buckets){
+        size_bucket = bucket.size();
+        for(int j = 0 ; j < size_bucket; ++j){
+            copy_input_arr[k++] = bucket.front();
+            bucket.pop();
         }
     }
     copy(copy_input_arr.begin(), copy_input_arr.end(), first);
@@ -148,15 +164,16 @@ void compact_bytes_radix_sort(Iterator first, Iterator last)
     const int n = std::distance(first, last);
     vector<int> sizes (counts_bucket);
     vector<int> shifts(counts_bucket);
-    vector<unsigned int> radix_array(n);
-    vector<unsigned int> copy_input_arr(n);
-    vector<unsigned int> bucket_index(n);
+    vector<int> radix_array(n);
+    vector<int> copy_input_arr(n);
+    vector<int> bucket_index(n);
     copy(first, last, copy_input_arr.begin());
     int current_position = 0;
     int size_bucket;
-    for(int i = 0 ; i < 4; ++i ){
+    char index;
+    for(int i = 0 ; i < 3; ++i ){
         for(int j = 0; j < n; ++j){
-            bucket_index[j] = get_val_byte(copy_input_arr[j] & mask_tables.table[i], i);
+            bucket_index[j] = get_val_byte(copy_input_arr[j], i);
             sizes[bucket_index[j]]++;
         }
         current_position = 0;
@@ -171,6 +188,18 @@ void compact_bytes_radix_sort(Iterator first, Iterator last)
         fill(shifts.begin(), shifts.end(), 0);
         fill(sizes.begin(),  sizes.end(),  0);
         fill(bucket_index.begin(), bucket_index.end(), 0);
+    }
+    for(int j = 0; j < n; ++j){
+        bucket_index[j] = get_val_signbyte(copy_input_arr[j], 3) + 128;
+        sizes[bucket_index[j]]++;
+    }
+    current_position = 0;
+    for(int i = 0 ; i < counts_bucket; ++i){
+        shifts[i] = current_position;
+        current_position += sizes[i];
+    }
+    for(int i = 0 ; i < n; ++i){
+        radix_array[shifts[bucket_index[i]]++] = copy_input_arr[i];
     }
     copy(radix_array.begin(), radix_array.end(), first);
 }
