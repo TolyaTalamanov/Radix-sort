@@ -30,7 +30,7 @@ def write_log(step, exe_path, save_path):
         i += step
 
     f.close()
-write_log(10000, '../cmake-build-debug/sample/bytes_radix_sort ', 'log/log_bytes_radix_sort.txt');
-write_log(10000, '../cmake-build-debug/sample/compact_bytes_radix_sort ', 'log/log_compact_bytes_radix_sort.txt');
-write_log(10000, '../cmake-build-debug/sample/lsd_compact_radix_sort ', 'log/log_lsd_compact_radix_sort.txt');
-write_log(10000, '../cmake-build-debug/sample/lsd_radix_sort ', 'log/log_lsd_radix_sort.txt');
+write_log(10000, '../build/sample/bytes_radix_sort ', 'log/log_bytes_radix_sort.txt');
+write_log(10000, '../build/sample/compact_bytes_radix_sort ', 'log/log_compact_bytes_radix_sort.txt');
+write_log(10000, '../build/sample/lsd_compact_radix_sort ', 'log/log_lsd_compact_radix_sort.txt');
+write_log(10000, '../build/sample/lsd_radix_sort ', 'log/log_lsd_radix_sort.txt');
