@@ -20,19 +20,19 @@ inline unsigned char get_val_byte(int number, int position)
 {
     return *((unsigned char*)&number + position);
 }
-struct RADIX_EXPORT
-create_table{
 
-    constexpr create_table() : table() {
-        for(auto i = 0 ; i < 4; ++i){
-            auto little_bit = i * 8;
-            for(auto j = little_bit; j < little_bit + 8; ++j ){
-                table[i] |= (1 << j);
-            }
-        }
-    }
-    int table[4];
-};
+
+
+
+
+
+
+
+
+
+
+
+
 
 class RADIX_EXPORT radix_compare
 {
@@ -122,7 +122,7 @@ void lsd_compact_radix_sort(Iterator first, Iterator last)
 template<typename Iterator>
 void bytes_radix_sort(Iterator first, Iterator last)
 {
-    constexpr auto mask_tables = create_table();
+   
     const int n = std::distance(first, last);
     vector<int> copy_input_arr(n);
     copy(first, last, copy_input_arr.begin());
@@ -159,7 +159,7 @@ void bytes_radix_sort(Iterator first, Iterator last)
 template<typename Iterator>
 void compact_bytes_radix_sort(Iterator first, Iterator last)
 {
-    constexpr auto mask_tables = create_table();
+   
     const int counts_bucket = 256;
     const int n = std::distance(first, last);
     vector<int> sizes (counts_bucket);
