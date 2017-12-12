@@ -4,9 +4,67 @@
 #include <random>
 #include <algorithm>
 #include <iterator>
-#include "Sorts.h"
-
+#include <vector>
+//#include "Sorts.h"
 using namespace std;
+inline char get_val_signbyte(int number, int position)
+{
+    return *((char*)&number + position);
+}
+inline unsigned char get_val_byte(int number, int position)
+{
+    return *((unsigned char*)&number + position);
+}
+
+
+template<typename Iterator>
+void compact_bytes_radix_sort(Iterator first, Iterator last)
+{
+
+    const int counts_bucket = 256;
+    const int n = std::distance(first, last);
+    vector<int> sizes (counts_bucket);
+    vector<int> shifts(counts_bucket);
+    vector<int> radix_array(n);
+    vector<int> copy_input_arr(n);
+    vector<int> bucket_index(n);
+    copy(first, last, copy_input_arr.begin());
+    int current_position = 0;
+    int size_bucket;
+    char index;
+    for(int i = 0 ; i < 3; ++i ){
+        for(int j = 0; j < n; ++j){
+            bucket_index[j] = get_val_byte(copy_input_arr[j], i);
+            sizes[bucket_index[j]]++;
+        }
+        current_position = 0;
+        for(int i = 0 ; i < counts_bucket; ++i){
+            shifts[i] = current_position;
+            current_position += sizes[i];
+        }
+        for(int i = 0 ; i < n; ++i){
+            radix_array[shifts[bucket_index[i]]++] = copy_input_arr[i];
+        }
+        copy(radix_array.begin(), radix_array.end(), copy_input_arr.begin());
+        fill(shifts.begin(), shifts.end(), 0);
+        fill(sizes.begin(),  sizes.end(),  0);
+        fill(bucket_index.begin(), bucket_index.end(), 0);
+    }
+    for(int j = 0; j < n; ++j){
+        bucket_index[j] = get_val_signbyte(copy_input_arr[j], 3) + 128;
+        sizes[bucket_index[j]]++;
+    }
+    current_position = 0;
+    for(int i = 0 ; i < counts_bucket; ++i){
+        shifts[i] = current_position;
+        current_position += sizes[i];
+    }
+    for(int i = 0 ; i < n; ++i){
+        radix_array[shifts[bucket_index[i]]++] = copy_input_arr[i];
+    }
+    copy(radix_array.begin(), radix_array.end(), first);
+}
+
 int main(int argc, char* argv[]) {
     MPI_Init(&argc, &argv);
     int rank, size;
@@ -70,6 +128,13 @@ int main(int argc, char* argv[]) {
     int start;
     int middle;
     int finish;
+    // int finish;FILE *fp;
+    // fp = fopen ("filename.txt","r");
+    // if (fp!=NULL)
+    // {
+    //     fscanf(fp,"Some String\n", &var);
+    //     fclose (fp);
+    // }
     vector<int> count_process(merge_count);
     for(int i = 0 ; i < merge_count; ++i){
         count_process[i] = size / (pow(2, i));
