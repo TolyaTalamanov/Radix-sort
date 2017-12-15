@@ -57,13 +57,6 @@ int main(int argc, char* argv[]) {
     double start_time = MPI_Wtime();
     MPI_Bcast(&size_array, 1, MPI_INT, 0, MPI_COMM_WORLD);
     MPI_Bcast(senddispls.data(), size, MPI_INT, 0, MPI_COMM_WORLD);
-    if(rank == 2){
-        // cout << "displs : " << '\n';
-        // copy(senddispls.begin(), senddispls.end(),
-                 // ostream_iterator<int>(cout, " "));
-                 // std::cout << "" << '\n';
-
-    }
     int remainder = rank == size - 1 ? size_array % size : 0;
     part = size_array / size;
     vector<int> part_input_arr(part + remainder);
@@ -86,24 +79,12 @@ int main(int argc, char* argv[]) {
     //         std::cout << "" << '\n';
     //  }
 
-    if(rank == 2){
-        // std::cout << "sorted part : " << '\n';
-        // copy(part_input_arr.begin(), part_input_arr.end(),
-             // ostream_iterator<int>(cout, " "));
-        // std::cout << "" << '\n';
-    }
-    //MPI_Barrier(MPI_COMM_WORLD);
+
+
     MPI_Gatherv(part_input_arr.data(), part + remainder, MPI_INT,
                 input_arr.data(), recvcount.data(), recvdispls.data(),
                 MPI_INT, 0, MPI_COMM_WORLD);
 
-
-    if(rank == 0){
-        // std::cout << "sorted array  : " << '\n';
-        // copy(input_arr.begin(), input_arr.end(),
-        // ostream_iterator<int>(cout, " "));
-                    // std::cout << "" << '\n';
-    }
 
     int merge_count = size / 2;
     //std::cout << "merge_count = " << merge_count << '\n';
@@ -129,58 +110,66 @@ int main(int argc, char* argv[]) {
     // }
     //std::cout << "merge count = " << merge_count << '\n';
     //MPI_Barrier(MPI_COMM_WORLD);
-    while(merge_count){
-        if(rank < merge_count){
-
-            start  = senddispls[rank * scale];
-            middle = start + part * (scale / 2) ;
-            finish = rank == (merge_count - 1) ? (size_array - 1) : middle + part ;
-            // std::cout << "rank = " << rank <<  "\n\n";
-            // std::cout << "start = " << start << '\n';
-            // std::cout << "middle = " << middle << '\n';
-            // std::cout << "finish = " << finish << '\n';
-            // std::cout << "rank = " << rank <<  "\n\n";
-            if(rank == 0){
-                // std::cout << "part = :" << '\n';
-                // copy(input_arr.begin() + start, input_arr.begin() + finish,
-                     // ostream_iterator<int>(cout, " "));
-                // std::cout << "" << '\n';
-
-            inplace_merge(input_arr.begin() + start,
-                          input_arr.begin() + middle,
-                          input_arr.begin() + finish );
+    int shift = 0;
+    if(rank == 0){
+        while(merge_count){
+            for(int i = 0 ; i < merge_count; ++i){
+                start  = senddispls[i * scale];
+                middle = senddispls[i * scale + pow(2, shift)];
+                //finish = senddispls[i * scale + 2];
+                //middle = start + part * (scale / 2);
+                //finish = i == (merge_count - 1) ? (size_array ) : middle + part * (scale / 2);
+                    //finish = size_array;
+                if(i == merge_count - 1 && size % 2 == 0){
+                    finish = size_array;
+                }
+                else{
+                    finish = senddispls[i * scale + pow(2, shift + 1) ];
+                }
+                std::cout << "rank = " << i <<  "\n";
+                std::cout << "middle = " << middle << '\n';
+                std::cout << "finish = " << finish << '\n';
+                std::cout << "start = " << start << '\n';
+                std::cout << "rank = " << i <<  "\n\n";
+                inplace_merge(input_arr.begin() + start,
+                              input_arr.begin() + middle,
+                              input_arr.begin() + finish );
             }
-
-        }
         // if(rank < (size / (pow(2, i)))){
-        //     std::cout << "iter = " << i << '\n';
         //     std::cout << "rank = " << rank <<  '\n';
         //     std::cout << "iter = " << i << '\n';
         //     start  = part * i;
+        //     std::cout << "iter = " << i << '\n';
         //     middle = part * (i + 1);
         //     finish = part * (i + 2);
         //     inplace_merge(input_arr.begin() + start,
         //                   input_arr.begin() + middle,
         //                   input_arr.begin() + finish );
         // }
-        MPI_Barrier(MPI_COMM_WORLD);
-        if(rank == 0){
-            // std::cout << "merge_count = " << merge_count << '\n';
-            // std::cout << "array : " << '\n';
-            // copy(input_arr.begin(), input_arr.end(),
-                 // ostream_iterator<int>(cout, " "));
-            // std::cout << "" << '\n';
+        //    std::cout << "merge_count = " << merge_count << '\n';
+        //    std::cout << "array : " << '\n';
+            if(merge_count % 2 != 0){
+                start  = senddispls[(merge_count - 1) * scale];
+                middle = finish;
+                finish = size_array;
+                inplace_merge(input_arr.begin() + start, input_arr.begin() + middle,
+                              input_arr.begin() + finish);
+            }
+           copy(input_arr.begin(), input_arr.end(),
+               ostream_iterator<int>(cout, " "));
+            std::cout << "" << '\n';
+            std::cout << "merge_count = " << merge_count << '\n';
+            merge_count /= 2;
+            shift++;
+            scale *= 2;
         }
-        merge_count /= 2;
-        scale *= 2;
-    }
-    if(rank == 0){
-        //if(finish != size_array){
+        //if(size % 2 != 0){
             //middle = part * (size - 1);
             //std::cout << "middle = " << middle << '\n';
             //std::cout << "finish = " << finish <<'\n';
-            //inplace_merge(input_arr.begin(), input_arr.begin() + finish,
-                                            //            input_arr.end());
+        //    std::cout << "/* message */" << '\n';
+        //    inplace_merge(input_arr.begin(), input_arr.begin() + senddispls[size - 1],
+        //                                                input_arr.end());
         //}
         if(is_sorted(input_arr.begin(), input_arr.end())){
             std::cout << "Array is sorted" << '\n';
@@ -188,8 +177,8 @@ int main(int argc, char* argv[]) {
         else{
             std::cout << "Error array is't sorted!!!" << '\n';
         }
-        copy(input_arr.begin(), input_arr.end(),
-             ostream_iterator<int>(cout, " "));
+        //copy(input_arr.begin(), input_arr.end(),
+        //     ostream_iterator<int>(cout, " "));
         double end_time = MPI_Wtime();
         cout << "\n" << (end_time - start_time) * 1000 << endl;
     }
