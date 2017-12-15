@@ -18,38 +18,34 @@ int main(int argc, char* argv[]) {
     vector<int> sendcount;
     vector<int> recvdispls;
     vector<int> senddispls(size);
-    //vector<int> merge_displs(size);
-
-
     int size_array;
-        size_array = atoi(argv[1]);
-        input_arr.resize(size_array);
-        part = size_array / size;
-        if(rank == 0){
-            int stride = part;
-            recvcount.resize(size);
-            sendcount.resize(size);
-            recvdispls.resize(size);
-            for (int i = 0; i < size - 1; i++) {
-                recvcount[i] = part;
-                sendcount[i] = part;
-                recvdispls[i] = i * stride;
-                senddispls[i] = i * stride;
-            }
-            recvdispls[size - 1]  = (size - 1) * stride;
-            senddispls[size - 1]  = (size - 1) * stride;
-            recvcount [size - 1]  = part + (size_array % size);
-            sendcount [size - 1]  = part + (size_array % size);
-
-            int seed = 1;
-            mt19937 generator(seed);
-            uniform_int_distribution<int> distribution(std::numeric_limits<int>::min(),
+    size_array = atoi(argv[1]);
+    input_arr.resize(size_array);
+    part = size_array / size;
+    if(rank == 0){
+        int stride = part;
+        recvcount.resize(size);
+        sendcount.resize(size);
+        recvdispls.resize(size);
+        for (int i = 0; i < size - 1; i++) {
+            recvcount[i] = part;
+            sendcount[i] = part;
+            recvdispls[i] = i * stride;
+            senddispls[i] = i * stride;
+        }
+        recvdispls[size - 1]  = (size - 1) * stride;
+        senddispls[size - 1]  = (size - 1) * stride;
+        recvcount [size - 1]  = part + (size_array % size);
+        sendcount [size - 1]  = part + (size_array % size);
+        int seed = 1;
+        mt19937 generator(seed);
+        uniform_int_distribution<int> distribution(std::numeric_limits<int>::min(),
                                                        std::numeric_limits<int>::max());
 
-            generate(input_arr.begin(), input_arr.end(),
-            [&distribution, &generator](){
-                return distribution(generator);
-            });
+        generate(input_arr.begin(), input_arr.end(),
+        [&distribution, &generator](){
+            return distribution(generator);
+        });
     }
     double end_time;
     double start_time = MPI_Wtime();
